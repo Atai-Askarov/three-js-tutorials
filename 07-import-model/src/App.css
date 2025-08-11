@@ -40,3 +40,21 @@
 button {
   font-size: calc(10px + 2vmin);
 }
+
+
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+#myThreeJsCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  display: block;
+}
+
+
