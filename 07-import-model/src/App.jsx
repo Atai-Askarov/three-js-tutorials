@@ -13,27 +13,38 @@ import SkillsSection from './components/Skills';
 import ContactSection from './components/ContactSection';
 import { birdStateManager } from './birdStateManager';
 import { foldAction } from './utils/animationUtils';
+import AboutSection from './components/AboutSection';
+import ScrollDownIndicator from './components/ScrollDownIndicator';
+import Sidebar from './components/Sidebar';
 
 function App() {
+  
+  const birdNumber = 100;
   const sceneRef = useRef(null);
-  const coveredRef = useRef(false);
   const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());
   const [grid, setGrid] = useState(null);
   const birdsRef = useRef(null); 
-  const paperGridRef = useRef(false);
-  const projectSectionRef = useRef(null); // <-- NEW
+  const [paperGrid, setPaperGrid] = useState(false);
+  const [gridDimensions, setGridDimensions] = useState(null);
+  const heroSectionRef = useRef(null);
+  const aboutSectionRef = useRef(null);
+  const projectSectionRef = useRef(null);
+  const skillSectionRef = useRef(null);
+  const contactSectionRef = useRef(null);
+
+
 
   async function handleResumeClick() {
 
   }
 
-  const createFlock = async (scene, grid, camera, paperGridRef) => {
+  const createFlock = async (scene, grid, camera, setPaperGrid, setGridDimensions) => {
     try {
       const boid = await Boid.create(true, scene); // Create leader boid
       if (grid) {
         const { boids, mixers } = await copyAndAddBoids(boid, scene, grid);
-        if (camera && paperGridRef) {
-          await animate(boids, mixers, camera, paperGridRef, scene);
+        if (camera) {
+          await animate(boids, mixers, camera, setPaperGrid, setGridDimensions, scene);
         }
       }
     } catch (error) {
@@ -41,7 +52,7 @@ function App() {
     }
   };
 
-  const copyAndAddBoids = async (leader, scene, grid, count = 190) => {
+  const copyAndAddBoids = async (leader, scene, grid, count = birdNumber) => {
     const followerPromises = Array.from({ length: count - 1 }, () => Boid.copyBoid(leader));
     const followerBoids = await Promise.all(followerPromises);
     birdsRef.current = [leader, ... followerBoids];
@@ -75,6 +86,15 @@ function App() {
   function handleResize() {
     setWindowDimensions(getWindowDimensions());
   }
+  
+function getUniqueRandomIndices(arrayLength, count = 8) {
+  const indices = Array.from({ length: arrayLength }, (_, i) => i);
+  for (let i = indices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+  return indices.slice(0, count);
+}
 
   useEffect(() => {
     let { scene } = setUpScene();
@@ -105,28 +125,29 @@ function App() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        console.log(entry.isIntersecting)
-        console.log(coveredRef.current)
         if (entry.isIntersecting) {
-          const gridBirds = birdsRef.current.slice(0, 8);
-          for(let i = 0; i < gridBirds.length; i++){
-            const bird = gridBirds[i];
+          // Fold and clear previous grid birds before subscribing new ones
+          birdStateManager.returnSubscribers().forEach(bird => foldAction(bird));
+          birdStateManager.clearSubscribers();
+          const shuffled = getUniqueRandomIndices(birdNumber, 15);
+          for (let i = 0; i < shuffled.length; i++) {
+            const index = shuffled[i];
+            const bird = birdsRef.current[index];
             birdStateManager.subscribe(bird);
           }
-            birdStateManager.setState("GRID_FORMATION");
-            birdStateManager.notifySubscribers();
-        }
-        
-        else{
-          console.log("you have arrived")
+          birdStateManager.setState("GRID_FORMATION");
+          birdStateManager.notifySubscribers();
+        } else {
+          setPaperGrid(false);
           birdStateManager.setState("FLOCKING");
           birdStateManager.notifySubscribers();
           birdStateManager.returnSubscribers().forEach(bird => foldAction(bird));
+          birdStateManager.clearSubscribers();
         }
       },
       {
         root: null, // viewport
-        rootMargin: '0px', // triggers when it's about 70% into view
+        rootMargin: '0px',
         threshold: 1,
       }
     );
@@ -134,13 +155,25 @@ function App() {
     if (projectSectionRef.current) {
       observer.observe(projectSectionRef.current);
     }
+    if (skillSectionRef.current) {
+      observer.observe(skillSectionRef.current);
+    }
+    if (heroSectionRef.current) {
+      observer.observe(heroSectionRef.current);
+    }
+    if (aboutSectionRef.current) {
+      observer.observe(aboutSectionRef.current);
+    }
+    if (contactSectionRef.current) {
+      observer.observe(contactSectionRef.current);
+    }
 
     return () => observer.disconnect();
-  }, [coveredRef.current]);
+  }, []);
 
   useEffect(() => {
     if (grid && sceneRef.current) {
-      createFlock(sceneRef.current, grid, sceneRef.current.camera, paperGridRef, sceneRef.current);
+      createFlock(sceneRef.current, grid, sceneRef.current.camera, setPaperGrid, setGridDimensions, sceneRef.current);
     }
   }, [grid]);
 
@@ -149,6 +182,7 @@ function App() {
 
   return (
     <div style={{ position: "relative", width: "100vw" }}>
+      <Sidebar />
       <canvas
         id="myThreeJsCanvas"
         style={{
@@ -174,8 +208,24 @@ function App() {
           scrollbarWidth: "none",
         }}
       >
-        <section style={{ height: "100vh", scrollSnapAlign: "start" }}>
-          <HeroSection onCVClick={handleResumeClick} />
+        
+          <section 
+            style={{ height: "100vh", scrollSnapAlign: "start" }}>
+            <ScrollDownIndicator />
+          </section>
+        
+
+        
+        <section 
+        ref={heroSectionRef}
+        style={{ height: "100vh", scrollSnapAlign: "start" }}>
+          <HeroSection onCVClick={handleResumeClick} visible = {paperGrid} gridDimensions = {gridDimensions} />
+        </section>
+
+        <section 
+        ref={aboutSectionRef}
+        style={{ height: "100vh", scrollSnapAlign: "start" }}>
+          <AboutSection visible = {paperGrid} gridDimensions = {gridDimensions} />
         </section>
 
         <section
@@ -185,12 +235,17 @@ function App() {
           <ProjectsSection />
         </section>
 
-        <section style={{ height: "100vh", scrollSnapAlign: "start" }}>
+        <section 
+        ref={skillSectionRef}
+        style={{ height: "100vh", scrollSnapAlign: "start" }}>
           <SkillsSection />
         </section>
 
-        <section style={{ height: "100vh", scrollSnapAlign: "start" }}>
-          <ContactSection />
+        <section 
+          ref={contactSectionRef}
+          style={{ height: "100vh", scrollSnapAlign: "start" }}
+        >
+          <ContactSection ref={contactSectionRef} />
         </section>
       </div>
     </div>

@@ -24,6 +24,13 @@ class BirdStateManager {
     returnSubscribers(){
         return this.subscribers;
     }
+    clearSubscribers(){
+        this.subscribers.clear();
+    }
+    hasSubscribers(){
+        return this.subscribers.size > 0;
+    }
+    
 }
 
 export const birdStateManager = new BirdStateManager();
