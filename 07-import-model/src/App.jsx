@@ -219,7 +219,7 @@ function getUniqueRandomIndices(arrayLength, count = 8) {
         <section 
         ref={heroSectionRef}
         style={{ height: "100vh", scrollSnapAlign: "start" }}>
-          <HeroSection onCVClick={handleResumeClick} visible = {paperGrid} gridDimensions = {gridDimensions} />
+          <HeroSection onCVClick={handleResumeClick} visible = {paperGrid && !!gridDimensions} gridDimensions = {gridDimensions} />
         </section>
 
         <section 
