@@ -25,6 +25,7 @@ class BirdStateManager {
         return this.subscribers;
     }
     clearSubscribers(){
+        this.currentState = BirdState.FLOCKING
         this.subscribers.clear();
     }
     hasSubscribers(){

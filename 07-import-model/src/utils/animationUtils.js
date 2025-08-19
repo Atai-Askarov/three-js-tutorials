@@ -151,7 +151,7 @@ function unfoldAction(target, bird, camera) {
       if (distance > freezeDistance) {
         // Move toward target
         const direction = new THREE.Vector3().subVectors(target, bird.position).normalize();
-        bird.velocity.copy(direction.multiplyScalar(.9)); // Adjust speed as needed
+        bird.velocity.copy(direction.multiplyScalar(3)); // Adjust speed as needed
       } else {
         // Snap to grid position and freeze
         if (bird.blenderData.mesh.position) {
@@ -174,46 +174,64 @@ export function foldAction(bird){
 }
 
 export function animate(birds, mixers, camera, setPaperGrid, setGridDimensions, scene) {
-    const clock = new THREE.Clock();
+  const clock = new THREE.Clock();
 
-    function render() {
-        const delta = clock.getDelta();
-        if (mixers.length > 0) {
-          mixers.forEach((mixer) => {
-            mixer.update(delta);
-          });
-        }
-        let haveArrived = [];
-        birds.forEach((surroundingBoids, boid) => {
-          if (boid.state === "GRID_FORMATION") {
-            const gridBirdsSet = birdStateManager.returnSubscribers();
-            const gridBirds = Array.from(gridBirdsSet);
-            const gridDimensions = formPaperGrid(camera, gridBirds, 3, 4, scene.scene);
-            setGridDimensions(gridDimensions);
-            for (let i = 0; i < gridBirds.length; i++) {
-              const gridBird = gridBirds[i];
-              const hasArrived = Math.abs(gridBird.position.distanceTo(camera.position) - 200) < 120;
-              haveArrived.push(hasArrived)
-            }
-            const allTruthy = haveArrived.every(Boolean);
-            if(allTruthy){
-              setPaperGrid(true); 
-            }
-          }
-          else if(boid.state === "FLOCKING"){
-            boid.apply_flocking_behavior(surroundingBoids);
-            boid.update();
-          }
-          else {
-            unfoldAction(null, boid, camera);
-            boid.update();
-          }
-        });
-        
-        requestAnimationFrame(render);
+  function render() {
+    const delta = clock.getDelta();
+
+    // Update animations
+    if (mixers.length > 0) {
+      for (let i = 0; i < mixers.length; i++) {
+        mixers[i].update(delta);
+      }
     }
-    render();
+
+    const gridBirdsSet = birdStateManager.returnSubscribers();
+    const gridBirds = gridBirdsSet ? Array.from(gridBirdsSet) : [];
+    let haveArrived = [];
+
+    if (birdStateManager.currentState === "GRID_FORMATION" && gridBirds.length > 0) {
+      // Compute grid only once per frame
+      const gridDimensions = formPaperGrid(camera, gridBirds, 3, 4, scene.scene);
+      setGridDimensions(gridDimensions);
+
+      for (let i = 0; i < gridBirds.length; i++) {
+        const gridBird = gridBirds[i];
+        const hasArrived = gridBird.velocity.lengthSq() === 0
+        haveArrived.push(hasArrived);
+      }
+
+      if (haveArrived.every(Boolean)) {
+        setPaperGrid(true);
+      }
+    }
+
+    // Main loop over ALL birds (only once!)
+    birds.forEach((surroundingBoids, boid) => {
+      switch (boid.state) {
+        case "FLOCKING":
+          boid.apply_flocking_behavior(surroundingBoids);
+          boid.update();
+          break;
+
+        case "GRID_FORMATION":
+          // Already handled in formPaperGrid – just update
+          boid.update();
+          break;
+
+        default: // IDLE, RESUME_FETCH, etc.
+          unfoldAction(null, boid, camera);
+          boid.update();
+          break;
+      }
+    });
+
+    requestAnimationFrame(render);
+  }
+
+  render();
 }
+
 
 /**
  * Given an array of THREE.Vector3 positions, returns the bounding box dimensions

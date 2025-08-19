@@ -300,10 +300,11 @@ class Boid {
     let flockingBoids = [];
     allBoids.forEach(
       (boid)=>{
-        if(boid.state === "GRID_FORMATION")
+        if(boid.state === "FLOCKING")
           flockingBoids.push(boid);
       }
     )
+    
     const cohesion = this.calculate_pcm(flockingBoids).multiplyScalar(1);
     const separation = this.keep_distance(flockingBoids).multiplyScalar(20);
     const alignment = this.keep_speed(flockingBoids)

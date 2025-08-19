@@ -31,6 +31,7 @@ function App() {
   const projectSectionRef = useRef(null);
   const skillSectionRef = useRef(null);
   const contactSectionRef = useRef(null);
+  const [activeSection, setActiveSection] = useState(null);
 
 
 
@@ -38,13 +39,17 @@ function App() {
 
   }
 
-  const createFlock = async (scene, grid, camera, setPaperGrid, setGridDimensions) => {
+  const createFlock = async (scene, grid, camera, setPaperGrid, setGridDimensions, activeSection
+  ) => {
     try {
+
+      // activeSection will show you which component is currently within the viewport
+      // that's important because I want to make custom paper grids for at least a
       const boid = await Boid.create(true, scene); // Create leader boid
       if (grid) {
         const { boids, mixers } = await copyAndAddBoids(boid, scene, grid);
         if (camera) {
-          await animate(boids, mixers, camera, setPaperGrid, setGridDimensions, scene);
+          await animate(boids, mixers, camera, setPaperGrid, setGridDimensions, scene, activeSection);
         }
       }
     } catch (error) {
@@ -121,7 +126,9 @@ function getUniqueRandomIndices(arrayLength, count = 8) {
       window.removeEventListener('resize', handleResize);
     };
   }, [windowDimensions]);
+  // ...existing code...
 
+  
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
