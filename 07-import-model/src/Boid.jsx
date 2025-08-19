@@ -297,9 +297,16 @@ class Boid {
   }
 
   apply_flocking_behavior(allBoids) {
-    const cohesion = this.calculate_pcm(allBoids).multiplyScalar(1);
-    const separation = this.keep_distance(allBoids).multiplyScalar(20);
-    const alignment = this.keep_speed(allBoids)
+    let flockingBoids = [];
+    allBoids.forEach(
+      (boid)=>{
+        if(boid.state === "GRID_FORMATION")
+          flockingBoids.push(boid);
+      }
+    )
+    const cohesion = this.calculate_pcm(flockingBoids).multiplyScalar(1);
+    const separation = this.keep_distance(flockingBoids).multiplyScalar(20);
+    const alignment = this.keep_speed(flockingBoids)
     const centerAttraction = this.centripetal_force().multiplyScalar(20);
     const wave = this.applyMurmurationWave(6);
 
