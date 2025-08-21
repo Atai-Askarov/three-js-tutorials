@@ -20,7 +20,7 @@ export function createClone(model) {
 }
  // optional gap between papers
 
-export function getGridPositions(center, rows, cols, paperSize = 65, gap = 0.1) {
+export function getGridPositions(center, rows, cols, separateColumn = true, paperSize = 65, gap = 0.09) {
   const mainGridPositions = [];
   const separateColumnPositions = [];
   const yOffset = 30;
@@ -36,8 +36,7 @@ export function getGridPositions(center, rows, cols, paperSize = 65, gap = 0.1) 
   const startY = cy - totalHeight / 2 + paperSize / 2;
 
   // Distance between main grid and separate column
-  const columnOffset = totalWidth + paperSize; // 2 paper widths away from main grid
-
+  
   // First create the main grid positions
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
@@ -49,18 +48,24 @@ export function getGridPositions(center, rows, cols, paperSize = 65, gap = 0.1) 
     }
   }
 
-  // Add separate column positions
-  const separateColumnX = startX + columnOffset;
-  for (let r = 0; r < rows; r++) {
-    separateColumnPositions.push(new THREE.Vector3(
-      separateColumnX,
-      startY + r * (paperSize + gap) - yOffset,
-      cz - 200
-    ));
+  if (separateColumn){
+    const columnOffset = totalWidth + paperSize; // 2 paper widths away from main grid
+
+    // Add separate column positions
+    const separateColumnX = startX + columnOffset;
+    for (let r = 0; r < rows; r++) {
+      separateColumnPositions.push(new THREE.Vector3(
+        separateColumnX,
+        startY + r * (paperSize + gap) - yOffset,
+        cz - 200
+      ));
+    }
+    return {mainGridPositions: mainGridPositions,
+          columnPositions: separateColumnPositions
+  };
   }
 
-  return {mainGridPositions: mainGridPositions,
-          columnPositions: separateColumnPositions
+  return {mainGridPositions: mainGridPositions
   };
 }
 
@@ -114,10 +119,44 @@ function createDebugDot(position) {
   return dot;
 }
 
-export function formPaperGrid(camera, birds, rows, cols, scene) {
-  const allPositions = getGridPositions(camera, rows, cols);
-  const positions = allPositions.mainGridPositions;
-  const combinedPositions = allPositions.mainGridPositions.concat(allPositions.columnPositions);
+export function formPaperGrid(camera, birds, rows = 3, cols = 4, scene = null, viewPortState) {
+  let combinedPositions = null;
+  let positions = null;
+  //console.log(viewPortState)
+  if (viewPortState){
+    console.log(viewPortState)
+  switch (viewPortState) {
+          case "HERO":
+            // Custom logic for hero section
+            const allPositions = getGridPositions(camera, rows, cols);
+            //console.log(allPositions)
+            positions = allPositions.mainGridPositions;
+            combinedPositions = allPositions.mainGridPositions.concat(allPositions.columnPositions);
+            break;
+          case "ABOUT":
+            positions = getGridPositions(camera, rows, cols,false).mainGridPositions;
+            combinedPositions = positions; 
+            break;
+          case "PROJECT":
+            // Custom logic for project section
+            positions = getGridPositions(camera, 2, 8,false,65).mainGridPositions;
+            combinedPositions = positions;
+            break;
+          case "SKILLS":
+            // Custom logic for skills section
+            positions = getGridPositions(camera, rows, cols,false).mainGridPositions;
+            combinedPositions = positions; 
+            break;
+          case "CONTACT":
+            // Custom logic for contact section
+            positions = getGridPositions(camera, rows, cols,false).mainGridPositions;
+            combinedPositions = positions; 
+            break;
+          default:
+            // Fallback logic
+            break;
+        }}
+  
   const gridDimensions = getBoundingBoxFromPositions(positions);
   // if(scene && !scene.userData.dotsCreated){
   //   createBoundingBoxDebugDots(scene,positions);
@@ -185,14 +224,14 @@ export function animate(birds, mixers, camera, setPaperGrid, setGridDimensions, 
         mixers[i].update(delta);
       }
     }
-
+    const viewPortState = birdStateManager.viewPortState;
     const gridBirdsSet = birdStateManager.returnSubscribers();
     const gridBirds = gridBirdsSet ? Array.from(gridBirdsSet) : [];
     let haveArrived = [];
 
     if (birdStateManager.currentState === "GRID_FORMATION" && gridBirds.length > 0) {
       // Compute grid only once per frame
-      const gridDimensions = formPaperGrid(camera, gridBirds, 3, 4, scene.scene);
+      const gridDimensions = formPaperGrid(camera, gridBirds, 3, 4, scene.scene, viewPortState);
       setGridDimensions(gridDimensions);
 
       for (let i = 0; i < gridBirds.length; i++) {
@@ -200,7 +239,6 @@ export function animate(birds, mixers, camera, setPaperGrid, setGridDimensions, 
         const hasArrived = gridBird.velocity.lengthSq() === 0
         haveArrived.push(hasArrived);
       }
-
       if (haveArrived.every(Boolean)) {
         setPaperGrid(true);
       }

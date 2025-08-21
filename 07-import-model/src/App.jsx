@@ -133,10 +133,15 @@ function getUniqueRandomIndices(arrayLength, count = 8) {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
+          
+          const sectionType = entry.target.dataset.section;
+          const birdAmount = entry.target.dataset.birdNumber;
+          birdStateManager.viewPortState = sectionType;
           // Fold and clear previous grid birds before subscribing new ones
           birdStateManager.returnSubscribers().forEach(bird => foldAction(bird));
           birdStateManager.clearSubscribers();
-          const shuffled = getUniqueRandomIndices(birdNumber, 15);
+
+          const shuffled = getUniqueRandomIndices(birdNumber, birdAmount);
           for (let i = 0; i < shuffled.length; i++) {
             const index = shuffled[i];
             const bird = birdsRef.current[index];
@@ -155,23 +160,33 @@ function getUniqueRandomIndices(arrayLength, count = 8) {
       {
         root: null, // viewport
         rootMargin: '0px',
-        threshold: 1,
+        threshold: 0.9,
       }
     );
 
     if (projectSectionRef.current) {
+      projectSectionRef.current.dataset.section = "PROJECT";
+      projectSectionRef.current.dataset.birdNumber = 16
       observer.observe(projectSectionRef.current);
     }
     if (skillSectionRef.current) {
+      skillSectionRef.current.dataset.section = "SKILLS";
+      skillSectionRef.current.dataset.birdNumber = 12
       observer.observe(skillSectionRef.current);
     }
     if (heroSectionRef.current) {
+      heroSectionRef.current.dataset.section = "HERO";
+      heroSectionRef.current.dataset.birdNumber = 15
       observer.observe(heroSectionRef.current);
     }
     if (aboutSectionRef.current) {
+      aboutSectionRef.current.dataset.section = "ABOUT";
+      aboutSectionRef.current.dataset.birdNumber = 12
       observer.observe(aboutSectionRef.current);
     }
     if (contactSectionRef.current) {
+      contactSectionRef.current.dataset.section = "CONTACT";
+      contactSectionRef.current.dataset.birdNumber = 12
       observer.observe(contactSectionRef.current);
     }
 
@@ -226,7 +241,7 @@ function getUniqueRandomIndices(arrayLength, count = 8) {
         <section 
         ref={heroSectionRef}
         style={{ height: "100vh", scrollSnapAlign: "start" }}>
-          <HeroSection onCVClick={handleResumeClick} visible = {paperGrid && !!gridDimensions} gridDimensions = {gridDimensions} />
+          <HeroSection onCVClick={handleResumeClick} visible = {paperGrid} gridDimensions = {gridDimensions} />
         </section>
 
         <section 

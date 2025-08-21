@@ -1,9 +1,19 @@
 import { BirdState } from './BirdStates';
 
+export const viewPortStates = {
+    PROJECT: "PROJECT",
+    SKILLS: "SKILLS",
+    ABOUT: "ABOUT",
+    HERO: "HERO",
+    CONTACT: "CONTACT",
+    DEFAULT: "DEFAULT"
+}
+
 class BirdStateManager {
     constructor() {
         this.currentState = BirdState.FLOCKING;
         this.subscribers = new Set();
+        this.viewPortState = viewPortStates.DEFAULT
     }
 
     setState(newState) {

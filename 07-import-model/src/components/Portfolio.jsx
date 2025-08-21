@@ -3,27 +3,27 @@ import React, { forwardRef } from "react";
 
 const projects = [
   {
-    title: "3D Origami Crane",
-    description: "A real-time animated origami crane using Three.js and GLTF.",
-    image: "/assets/3d_origami_crane_gltf/preview.png",
+    title: "3D Flocking Simulation + Portfolio Website",
+    description: "Hundreds of real time, animated origami birds flock together to display the contents of this portfolio website.",
+    image: "/assets/preview.jpg",
     link: "https://github.com/yourusername/3d-origami-crane"
   },
   {
-    title: "3D Origami Crane",
-    description: "A real-time animated origami crane using Three.js and GLTF.",
-    image: "/assets/3d_origami_crane_gltf/preview.png",
+    title: "Concordia University Navigation System",
+    description: `An interactive map that allows navigation around Concordia campuses indoors, outdoors and in between.`,
+    image: "/assets/preview.jpg",
     link: "https://github.com/yourusername/3d-origami-crane"
   },
   {
-    title: "3D Origami Crane",
-    description: "A real-time animated origami crane using Three.js and GLTF.",
-    image: "/assets/3d_origami_crane_gltf/preview.png",
+    title: "Full Stack Car Rental Application",
+    description: "",
+    image: "/assets/preview.jpg",
     link: "https://github.com/yourusername/3d-origami-crane"
   },
   {
-    title: "3D Origami Crane",
+    title: "Platform for Group and Private Lessons",
     description: "A real-time animated origami crane using Three.js and GLTF.",
-    image: "/assets/3d_origami_crane_gltf/preview.png",
+    image: "/assets/preview.jpg",
     link: "https://github.com/yourusername/3d-origami-crane"
   },
   // Add more projects if needed
@@ -31,6 +31,9 @@ const projects = [
 
 const ProjectsSection = forwardRef((props, ref) => {
   return (
+    <div
+    style={{position: "relative"}}>
+      
     <section
       ref={ref}
       style={{
@@ -38,7 +41,8 @@ const ProjectsSection = forwardRef((props, ref) => {
         padding: "60px 0",
         textAlign: "center",
         position: "absolute",
-        left: "30vh"
+        left: "7vw",
+        top: "25vh"
       }}
     >
       <h2 style={{ fontSize: "2rem", marginBottom: 32 }}>Projects</h2>
@@ -47,7 +51,8 @@ const ProjectsSection = forwardRef((props, ref) => {
           display: "flex",
           flexWrap: "wrap",
           justifyContent: "center",
-          gap: 32
+          gap: 32,
+          
         }}
       >
         {projects.map((project, idx) => (
@@ -87,6 +92,7 @@ const ProjectsSection = forwardRef((props, ref) => {
         ))}
       </div>
     </section>
+    </div>
   );
 });
 
