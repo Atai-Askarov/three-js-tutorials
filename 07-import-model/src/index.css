@@ -11,14 +11,14 @@ code {
   font-family:
     source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
-
+/* 
 body > div[style*="position:fixed"],
 body > div[style*="position: fixed"],
 body > canvas[style*="position:fixed"],
 body > canvas[style*="position: fixed"] {
   display: none !important;
-}
+} */
 
-#stats, .stats, .dg.ac { 
+/* #stats, .stats, .dg.ac { 
   display: none !important; 
-}
+} */

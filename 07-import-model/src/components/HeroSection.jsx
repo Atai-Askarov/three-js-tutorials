@@ -1,5 +1,5 @@
-import React, { forwardRef } from "react";
-import SmolderingText from "./SmolderingText";
+import { forwardRef, useRef, useEffect } from "react";
+import {  applyPlane} from "../utils/planeUtils";
 const heroStyle = {
   zIndex: 10,
   color: "#fff",
@@ -31,28 +31,19 @@ const buttonStyle = {
   bottom: "15vh"
 
 };
-const text2 = `
-Hi! I'm Atai Askarov.
+const data = [{
+  title: "Building Experiences That Live Between Code and Imagination.",
+  description: "Hi, I'm Atai Askarov — a Full-Stack Developer & Creative Technologist crafting interactive, story-driven web, mobile, and 3D experiences."
+}]
 
-Full-Stack Developer & Creative Technologist
 
-I craft immersive digital experiences across web, mobile, and 3D.
-From responsive front-end interfaces to scalable backends,
-I bring ideas to life through code and creativity.
-
-• Full-Stack Web Development
-• Interactive 3D Experiences
-• Cross-Platform Mobile Apps
-
-Tech Stack:
-React • Three.js • Node.js • React Native • WebGL
-Blender • Java • Python
-
-Explore my portfolio to see how I blend creativity and technology!
-
-  `
-const HeroSection = forwardRef(({ onCVClick,text = text2, visible, gridDimensions }, ref) => {
-  
+const HeroSection = forwardRef(({onCVClick, font, visible, scene, gridDimensions: gridRect, section }, ref) => {
+  const planeRef = useRef([]);
+    // Create/remove plane when scene or visibility ch
+    // anges
+    useEffect(() => {
+      applyPlane(scene, visible, planeRef, gridRect, data, font)
+    }, [scene, visible]);
   return (
     <div>
       {visible && 
@@ -63,7 +54,7 @@ const HeroSection = forwardRef(({ onCVClick,text = text2, visible, gridDimension
          
       }}
     >
-      <SmolderingText text = {text} dimensions = {gridDimensions} />
+      {/* <SmolderingText text = {text} dimensions = {gridDimensions} /> */}
      
       <button
         style={buttonStyle}

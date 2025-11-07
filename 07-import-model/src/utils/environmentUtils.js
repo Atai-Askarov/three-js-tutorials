@@ -76,8 +76,8 @@ export function setUpScene() {
 
   test.camera.fov = 70; // Wider field of view for a more distant sky effect
   test.camera.updateProjectionMatrix();
-  test.camera.position.set(0, 50, 700); // Move camera further back
-  test.camera.lookAt(0, -20, 0);
+  test.camera.position.set(0, 50, 500); // Move camera further back
+  test.camera.lookAt(0, -50, 0);
 
   return {
     canvas: canvas,
