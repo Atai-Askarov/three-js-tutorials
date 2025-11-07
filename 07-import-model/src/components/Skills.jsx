@@ -1,26 +1,84 @@
-import React from "react";
+import  { forwardRef, useEffect, useRef } from "react";
 
-export default function SkillsSection() {
+import {  applyPlane} from "../utils/planeUtils";
+const _skillsData = [
+  {
+    title: "Languages",
+    description: [
+      "JavaScript / TypeScript",
+      "Java",
+      "Python",
+      "C#"
+    ].join("\n")
+  },
+  {
+    title: "Frameworks",
+    description: [
+      "React.js",
+      "Three.js",
+      "SpringBoot",
+      "Flask"
+    ].join("\n")
+  },
+  {
+    title: "DeveloperTools",
+    description: [
+      "Git ",
+      "Node.js",
+      "Jest",
+      "Postman",
+      "Figma"
+    ].join("\n")
+  },
+  {
+    title: "Databases",
+    description: [
+      "MongoDB",
+      "PostgreSQL",
+      "MySQL",
+      "Redis"
+    ].join("\n")
+  }
+];
+const SkillsSection = forwardRef(({ font, visible, scene, gridDimensions: gridRect, section }, ref) => {
+  const mountRef = useRef(null);
+  const planeRef = useRef([]);
+  // Create/remove plane when scene or visibility ch
+  // anges
+  useEffect(() => {
+    applyPlane(scene, visible, planeRef, gridRect, _skillsData, font)
+  }, [scene, visible]);
   return (
-    <section style={{
-      height: "100vh",
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "center",
-      alignItems: "center",
-      color: "#fff",
-      scrollSnapAlign: "start"
-    }}>
-      <h2 style={{ fontSize: "2rem", marginBottom: 24 }}>Skills</h2>
-      <ul style={{ fontSize: "1.2rem", listStyle: "none", padding: 0 }}>
-        <li>JavaScript / TypeScript</li>
-        <li>React / Three.js</li>
-        <li>WebGL / GLSL</li>
-        <li>Node.js</li>
-        <li>Python</li>
-        <li>UI/UX Design</li>
-        <li>Creative Coding</li>
-      </ul>
-    </section>
+    <div style={{ position: "relative" }}>
+      <div
+        ref={ref}
+        style={{
+          width: "100vw",
+          height: "100vh",
+          position: "absolute",
+          top: 0,
+          left: 0,
+          zIndex: 0,
+        }}
+      />
+      {visible && (
+        <section
+          ref={ref}
+          style={{
+            height: "100vh",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            aligndescription: "center",
+            color: "#fff",
+            scrollSnapAlign: "start",
+            position: "relative",
+            zIndex: 1,
+          }}
+        >
+        </section>
+      )}
+    </div>
   );
-}
+});
+export default SkillsSection

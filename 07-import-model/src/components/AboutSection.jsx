@@ -1,20 +1,25 @@
-import React, { forwardRef } from 'react';
-import SmolderingText from './SmolderingText';
+import React, { forwardRef, useRef, useEffect } from 'react';
+import {  applyPlane} from "../utils/planeUtils";
+const data = [{
+  title: "About me",
+  description: `Hi there — I’m Atai Askarov, a Full-Stack Developer and Creative Technologist passionate about building meaningful, interactive digital experiences. My work bridges the gap between engineering and design, blending functionality with emotion to create products that are not only powerful, but also deeply engaging.
 
-const text2 = `
-Hi! I'm a creative developer passionate about 3D graphics,
-interactive experiences, and building beautiful web applications.
+I specialize in developing scalable web and mobile applications, architecting efficient back-end systems, and crafting immersive 3D environments that tell a story. Whether it’s a real-time web app, a visually rich front-end, or a cross-platform mobile experience, I focus on bringing ideas to life through elegant code, thoughtful design, and technical precision.
 
-I love exploring new technologies and sharing what I learn
-through tutorials and open source projects!
+My toolkit spans technologies like React, Node.js, React Native, and WebGL, along with creative tools such as Three.js and Blender. I enjoy working across the entire stack — from designing data models and cloud infrastructure to animating 3D scenes that respond to user interaction.
 
-This portfolio demonstrates my journey in 3D web development,
-featuring flocking birds, paper grid animations, and more. 
+Above all, I believe technology should inspire curiosity and connection. Explore my portfolio to see how I merge software engineering, visual storytelling, and user-centered design into cohesive, interactive experiences that push creative and technical boundaries.`
+}]
 
-Scroll down to see my projects, skills, and how to get in touch!
-`;
 
-const AboutSection = forwardRef(({ text = text2, visible = true, gridDimensions }, ref) => {
+
+const AboutSection = forwardRef(({ font, visible, scene, gridDimensions: gridRect, section }, ref) => {
+  const planeRef = useRef([]);
+      // Create/remove plane when scene or visibility ch
+      // anges
+      useEffect(() => {
+        applyPlane(scene, visible, planeRef, gridRect, data, font)
+      }, [scene, visible]);
   return (
     <div>
       {visible && (
@@ -34,7 +39,6 @@ const AboutSection = forwardRef(({ text = text2, visible = true, gridDimensions 
             height: "100vh"
           }}
         >
-          <SmolderingText text={text} dimensions={gridDimensions} />
         </section>
       )}
     </div>

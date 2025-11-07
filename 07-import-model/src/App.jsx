@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import SpatialGrid from './SpatialGrid';
-import * as THREE from 'three';
 import { getWindowDimensions, setUpScene } from './utils/environmentUtils';
 import Boid from './Boid';
 import { animate} from './utils/animationUtils';
@@ -10,12 +9,12 @@ import NavBar from './components/NavBar';
 import HeroSection from './components/HeroSection';
 import ProjectsSection from './components/Portfolio';
 import SkillsSection from './components/Skills';
-import ContactSection from './components/ContactSection';
 import { birdStateManager } from './birdStateManager';
 import { foldAction } from './utils/animationUtils';
 import AboutSection from './components/AboutSection';
 import ScrollDownIndicator from './components/ScrollDownIndicator';
 import Sidebar from './components/Sidebar';
+import { loadFont } from './utils/fondLoader';
 
 function App() {
   
@@ -31,15 +30,18 @@ function App() {
   const projectSectionRef = useRef(null);
   const skillSectionRef = useRef(null);
   const contactSectionRef = useRef(null);
+  const [font, setFont] = useState();
   const [activeSection, setActiveSection] = useState(null);
-
-
+  const activeSectionRef = useRef(null);
 
   async function handleResumeClick() {
 
   }
 
-  const createFlock = async (scene, grid, camera, setPaperGrid, setGridDimensions, activeSection
+  useEffect(() => {
+    activeSectionRef.current = activeSection;
+  }, [activeSection]);
+  const createFlock = async (scene, grid, camera, setPaperGrid, setGridDimensions
   ) => {
     try {
 
@@ -49,7 +51,7 @@ function App() {
       if (grid) {
         const { boids, mixers } = await copyAndAddBoids(boid, scene, grid);
         if (camera) {
-          await animate(boids, mixers, camera, setPaperGrid, setGridDimensions, scene, activeSection);
+          await animate(boids, mixers, camera, setPaperGrid, setGridDimensions, scene);
         }
       }
     } catch (error) {
@@ -100,6 +102,12 @@ function getUniqueRandomIndices(arrayLength, count = 8) {
   }
   return indices.slice(0, count);
 }
+   useEffect(() => { 
+      const FONT_URL = "../fonts/MorrisRoman-Black.ttf"
+      loadFont(FONT_URL).then(font => {
+        setFont(font);
+      });
+    }, []);
 
   useEffect(() => {
     let { scene } = setUpScene();
@@ -131,36 +139,44 @@ function getUniqueRandomIndices(arrayLength, count = 8) {
   
   useEffect(() => {
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          
+      (entries) => {
+        for (const entry of entries) {
           const sectionType = entry.target.dataset.section;
           const birdAmount = entry.target.dataset.birdNumber;
-          birdStateManager.viewPortState = sectionType;
-          // Fold and clear previous grid birds before subscribing new ones
-          birdStateManager.returnSubscribers().forEach(bird => foldAction(bird));
-          birdStateManager.clearSubscribers();
+          if (entry.isIntersecting) {
+            if (activeSectionRef.current !== sectionType) {
+              setActiveSection(sectionType);
 
-          const shuffled = getUniqueRandomIndices(birdNumber, birdAmount);
-          for (let i = 0; i < shuffled.length; i++) {
-            const index = shuffled[i];
-            const bird = birdsRef.current[index];
-            birdStateManager.subscribe(bird);
+              birdStateManager.viewPortState = sectionType;
+              // Fold and clear previous grid birds before subscribing new ones
+              birdStateManager.returnSubscribers().forEach(bird => foldAction(bird));
+              birdStateManager.clearSubscribers();
+              const shuffled = getUniqueRandomIndices(birdNumber, birdAmount);
+              for (let i = 0; i < shuffled.length; i++) {
+                const index = shuffled[i];
+                const bird = birdsRef.current[index];
+                birdStateManager.subscribe(bird);
+              }
+              birdStateManager.setState("GRID_FORMATION");
+              birdStateManager.notifySubscribers();
+            }
+          } else {
+            // If the section leaving view is the active one, clear it to avoid lingering highlight
+            if (activeSectionRef.current === sectionType) {
+              setActiveSection(null);
+            }
+            setPaperGrid(false);
+            birdStateManager.setState("FLOCKING");
+            birdStateManager.notifySubscribers();
+            birdStateManager.returnSubscribers().forEach(bird => foldAction(bird));
+            birdStateManager.clearSubscribers();
           }
-          birdStateManager.setState("GRID_FORMATION");
-          birdStateManager.notifySubscribers();
-        } else {
-          setPaperGrid(false);
-          birdStateManager.setState("FLOCKING");
-          birdStateManager.notifySubscribers();
-          birdStateManager.returnSubscribers().forEach(bird => foldAction(bird));
-          birdStateManager.clearSubscribers();
         }
       },
       {
         root: null, // viewport
         rootMargin: '0px',
-        threshold: 0.9,
+        threshold: 0.7,
       }
     );
 
@@ -171,7 +187,7 @@ function getUniqueRandomIndices(arrayLength, count = 8) {
     }
     if (skillSectionRef.current) {
       skillSectionRef.current.dataset.section = "SKILLS";
-      skillSectionRef.current.dataset.birdNumber = 12
+      skillSectionRef.current.dataset.birdNumber = 16
       observer.observe(skillSectionRef.current);
     }
     if (heroSectionRef.current) {
@@ -218,7 +234,7 @@ function getUniqueRandomIndices(arrayLength, count = 8) {
         }}
       />
 
-      <NavBar />
+      <NavBar activeSection={activeSection} />
       <div
         style={{
           position: "relative",
@@ -235,40 +251,55 @@ function getUniqueRandomIndices(arrayLength, count = 8) {
             style={{ height: "100vh", scrollSnapAlign: "start" }}>
             <ScrollDownIndicator />
           </section>
-        
-
-        
         <section 
+        id = "hero"
         ref={heroSectionRef}
         style={{ height: "100vh", scrollSnapAlign: "start" }}>
-          <HeroSection onCVClick={handleResumeClick} visible = {paperGrid} gridDimensions = {gridDimensions} />
+          <HeroSection 
+          onCVClick={handleResumeClick} 
+          font = {font} 
+          visible = {paperGrid && activeSection === "HERO"}
+          scene = {sceneRef.current} 
+          gridDimensions={gridDimensions}
+          section = {activeSection}  />
         </section>
 
         <section 
+        id = "about"
         ref={aboutSectionRef}
         style={{ height: "100vh", scrollSnapAlign: "start" }}>
-          <AboutSection visible = {paperGrid} gridDimensions = {gridDimensions} />
+          <AboutSection 
+                        font = {font} 
+                        visible = {paperGrid && activeSection === "ABOUT"}
+                        scene = {sceneRef.current} 
+                        gridDimensions={gridDimensions} 
+                        section = {activeSection}
+          />
         </section>
 
         <section
+          id = "portfolio"
           ref={projectSectionRef}
           style={{ height: "100vh", scrollSnapAlign: "start" }}
         >
-          <ProjectsSection />
+          <ProjectsSection  font = {font} 
+                            visible = {paperGrid && activeSection === "PROJECT"}
+                            scene = {sceneRef.current} 
+                            gridDimensions={gridDimensions}
+                            section = {activeSection} />
         </section>
 
         <section 
+        id = "skills"
         ref={skillSectionRef}
         style={{ height: "100vh", scrollSnapAlign: "start" }}>
-          <SkillsSection />
+          <SkillsSection font = {font}
+                        visible = {paperGrid && activeSection === "SKILLS"}
+                        scene = {sceneRef.current}
+                        gridDimensions={gridDimensions}
+                        section = {activeSection} />
         </section>
 
-        <section 
-          ref={contactSectionRef}
-          style={{ height: "100vh", scrollSnapAlign: "start" }}
-        >
-          <ContactSection ref={contactSectionRef} />
-        </section>
       </div>
     </div>
   );

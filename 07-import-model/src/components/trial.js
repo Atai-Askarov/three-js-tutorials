@@ -1,6 +1,6 @@
 // src/components/ProjectsSection.jsx
 import  { forwardRef, useEffect, useRef } from "react";
-import {  applyPlane} from "../utils/planeUtils";
+import { createPlane, disposePlane, disposeSharedResources } from "../utils/planeUtils";
 
 const projects = [
   {
@@ -12,7 +12,7 @@ const projects = [
   {
     title: "Concordia University Navigation System",
     description: `An interactive map that allows navigation around Concordia campuses indoors, outdoors and in between.`,
-    image: "/assets/preview.jpg",
+    image: "/assets/ConcordiaLogo.png",
     link: "https://github.com/yourusername/3d-origami-crane"
   },
   {
@@ -30,14 +30,14 @@ const projects = [
   // Add more projects if needed
 ];
 
-const ProjectsSection = forwardRef(({ font, visible, scene, gridDimensions: gridRect, section }, ref) => {
+const ProjectsSection = forwardRef(({ font, visible, scene, gridDimensions: gridRect }, ref) => {
     const planeRef = useRef([]);
     // Create/remove plane when scene or visibility ch
     // anges
-    
     useEffect(() => {
-      applyPlane(scene, visible, planeRef, gridRect, projects, font, section)
+      applyPlane(scene, visible,planeRef, gridRect, projects, font);
     }, [scene, visible]);
+
   return (
     <div
     style={{position: "relative"}}>
@@ -53,7 +53,7 @@ const ProjectsSection = forwardRef(({ font, visible, scene, gridDimensions: grid
         
       }}
     >
-
+        <button></button>
       <div
         style={{
           display: "flex",
